@@ -1,4 +1,7 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
+import 'package:task_flow/screens/signup.dart';
 
 class Signin extends StatefulWidget {
   const Signin({super.key});
@@ -10,9 +13,10 @@ class Signin extends StatefulWidget {
 class _SigninState extends State<Signin> {
  bool rememberMe = false;
   bool obscurePassword = true;
+  final _formkey = GlobalKey<FormState>();
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
-  final _formkey = GlobalKey<FormState>();
+  
 
   String? validatePassword(String? val) {
     if (val!.isEmpty) {
@@ -63,7 +67,7 @@ class _SigninState extends State<Signin> {
   final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
-    if (email == null){
+    if (email!.isEmpty){
       return "Enter Email";
     }
     if(emailRegex.hasMatch(email)){
@@ -253,7 +257,7 @@ class _SigninState extends State<Signin> {
                         ),
                         onPressed: () {
                             if(_formkey.currentState!.validate()){
-                                  print("Valid");
+                                  
                             }
 
                         },
@@ -292,7 +296,10 @@ class _SigninState extends State<Signin> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: 
+                            (context)=> const SignUpScreen()));
+                          },
                           child: const Text(
                             "Sign Up",
                             style: TextStyle(
