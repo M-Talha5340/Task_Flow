@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# task_flow
+git # task_flow
 
 A new Flutter project.
 
@@ -16,6 +15,4 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
 # Task_Flow
->>>>>>> 8a3d0598ed6fc17cb219186e7a22dc01ccb43819
