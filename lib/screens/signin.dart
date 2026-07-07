@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:task_flow/screens/forgotpassword.dart';
 import 'package:task_flow/screens/signup.dart';
 
 class Signin extends StatefulWidget {
@@ -138,7 +139,7 @@ class _SigninState extends State<Signin> {
                     const SizedBox(height: 5),
         
                     Text(
-                      "Please enter your details to signIn",
+                      "Please enter your details to    Sign In",
                       style: TextStyle(
                         color: Colors.grey.shade700,
                         fontSize: 18,
@@ -189,7 +190,10 @@ class _SigninState extends State<Signin> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: 
+                            (context) => ForgotPasswordScreen()));
+                          },
                           child: const Text(
                             "Forgot Password?",
                             style: TextStyle(
@@ -265,7 +269,7 @@ class _SigninState extends State<Signin> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Login",
+                              "Sign In",
                               style: TextStyle(
                                 fontSize: 26,
                                 color: Colors.white,
