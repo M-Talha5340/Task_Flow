@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:task_flow/screens/forgotpassword.dart';
+import 'package:task_flow/screens/navbar.dart';
 import 'package:task_flow/screens/signup.dart';
 
 class Signin extends StatefulWidget {
@@ -261,7 +262,9 @@ class _SigninState extends State<Signin> {
                         ),
                         onPressed: () {
                             if(_formkey.currentState!.validate()){
-                                  
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_){
+                                    return Navbar();
+                                  }));
                             }
 
                         },
