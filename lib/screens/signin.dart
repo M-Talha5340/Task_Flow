@@ -19,6 +19,12 @@ class _SigninState extends State<Signin> {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
   
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   String? validatePassword(String? val) {
     if (val!.isEmpty) {

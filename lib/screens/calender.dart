@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:task_flow/models/task.dart';
 import 'package:task_flow/models/taskdata.dart';
+import 'package:task_flow/screens/addtask.dart';
 import 'package:task_flow/screens/navbar.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -142,9 +143,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),                
                  SizedBox(width: 10,),
                 ElevatedButton.icon(
-
-                  onPressed: () {},
-
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_)=>NewTaskScreen()));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff0D47A1),
                   ),
@@ -165,7 +166,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
             const SizedBox(height: 15),
 
             Expanded(
-
               child: todayEvents.isEmpty
 
                   ? const Center(
@@ -228,7 +228,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                               children: [
 
-                                Text(DateFormat("dd MMM yyyy, hh:mm a").format(event.date)),
+                                Text(DateFormat("dd MMM yyyy").format(event.date)),
 
                                 
 

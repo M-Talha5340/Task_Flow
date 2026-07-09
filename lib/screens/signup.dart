@@ -16,6 +16,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
 
+   @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   String? validatePassword(String? val) {
     if (val!.isEmpty) {
       return "Enter Password";

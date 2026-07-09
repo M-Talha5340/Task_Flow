@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:task_flow/models/task.dart';
 import 'package:task_flow/models/taskdata.dart';
+import 'package:task_flow/screens/addtask.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -33,13 +35,14 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     totalPending = tasks.where((t) => t.completed == false).length;
+  
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
        floatingActionButton: FloatingActionButton(onPressed: (){
-
+             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>NewTaskScreen()));
       },
       
       backgroundColor:  Color(0xff0D47A1),child: Icon(Icons.add,color: Colors.white,),
@@ -135,8 +138,7 @@ class _HomeState extends State<Home> {
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: 100,
+                    child: Container(                      
                       width: double.infinity,
                       decoration: BoxDecoration(
                         border: Border.all(width: 1.5, color: Colors.white),
@@ -153,21 +155,26 @@ class _HomeState extends State<Home> {
                             });
                           },
                         ),
-                        title: Row(
+                        title: Row(                        
                           children: [
-                            Text(
-                              filteredTasks[index].title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xff102A5C),
-                                decoration: filteredTasks[index].completed
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
+                            Expanded(
+                              child: Text(
+                                filteredTasks[index].title,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  overflow: TextOverflow.ellipsis,
+                                  color: Color(0xff102A5C),
+                                  decoration: filteredTasks[index].completed
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
+                                ),
                               ),
                             ),
-                            SizedBox(width: 25),
+                             SizedBox(width: 5),
                             Container(
                               padding: EdgeInsets.all(2),
+                                                        
                               decoration: BoxDecoration(
                                 color: filteredTasks[index].priority == "HIGH"
                                     ? Colors.orange.shade300
@@ -192,17 +199,36 @@ class _HomeState extends State<Home> {
                             ),
                           ],
                         ),
-                        subtitle: Text(
-                          filteredTasks[index].description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            decoration: filteredTasks[index].completed
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
+                        subtitle: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:[ Text(
+                            filteredTasks[index].description
+                              ,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              decoration: filteredTasks[index].completed
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
                           ),
+                          const SizedBox(height: 
+                          2,),
+                          Text(
+                              DateFormat("dd MMM yyyy").format(filteredTasks[index].date)
+                              ,                                                      
+                            style: TextStyle(
+                              decoration: filteredTasks[index].completed
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                          ),
+
+                          ]
                         ),
                         contentPadding: EdgeInsets.symmetric(horizontal: 5),
+
                       ),
                     ),
                   );
