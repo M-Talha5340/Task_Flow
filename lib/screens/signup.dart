@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:task_flow/firbaseservices/service.dart';
 import 'package:task_flow/screens/signIn.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -16,7 +18,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
 
-   @override
+  @override
   void dispose() {
     nameController.dispose();
     emailController.dispose();
@@ -83,7 +85,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return "Invalid Email Formate";
   }
 
-  String? validateName(String? name) {  
+  String? validateName(String? name) {
     if (name!.isEmpty) {
       return "Enter Name";
     }
@@ -212,8 +214,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           TextFormField(
                             obscureText: obscurePassword,
                             validator: validatePassword,
+                            controller: passwordController,
                             decoration: InputDecoration(
-                              hintText: "Password",               
+                              hintText: "Password",
                               contentPadding: const EdgeInsets.symmetric(
                                 vertical: 18,
                                 horizontal: 20,
@@ -221,8 +224,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   obscurePassword
-                                      ?Icons.visibility_off_outlined
-                                      :  Icons.visibility_outlined,
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
                                 ),
 
                                 onPressed: () {
@@ -236,7 +239,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                           ),
-                          
 
                           const SizedBox(height: 15),
 
@@ -250,10 +252,68 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
-                              onPressed: () {
-                                 if(_formkey.currentState!.validate()){
-                                           
-                                 }
+                              onPressed: () async {
+                                if (_formkey.currentState!.validate()) {
+                                  try {
+                                    UserCredential userCredential =
+                                        await Service.signUp(
+                                          emailController.text,
+                                          passwordController.text,
+                                        );
+                                    User u = userCredential.user!;
+                                    print(u.uid);
+                                    u.updateDisplayName(nameController.text);
+                                    if (!context.mounted) {
+                                      return;
+                                    }
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Account Created Successfully",
+                                        ),
+                                      ),
+                                    );
+                                  } on FirebaseAuthException catch (e) {
+                                    String message = "";
+                                    switch (e.code) {
+                                      case "email-already-in-use":
+                                        message =
+                                            "This email is already registered.";
+                                        break;
+
+                                      case "invalid-email":
+                                        message = "Please enter a valid email.";
+                                        break;
+
+                                      case "weak-password":
+                                        message =
+                                            "Password should be at least 6 characters.";
+                                        break;
+
+                                      case "user-not-found":
+                                        message =
+                                            "No account found with this email.";
+                                        break;
+
+                                      case "wrong-password":
+                                        message = "Incorrect password.";
+                                        break;
+
+                                      case "network-request-failed":
+                                        message =
+                                            "Please check your internet connection.";
+                                        break;
+
+                                      default:
+                                        message =
+                                            e.message ??
+                                            "Something went wrong.";
+                                    }
+                                    ScaffoldMessenger.of(context).showSnackBar
+                                    (SnackBar(content: Text(message)));
+                                  }
+                                }
                               },
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -276,36 +336,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 10,),
+                          SizedBox(height: 10),
                           Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Already have an account?",
-                                  style: TextStyle(fontSize: 18),
-                                ),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Already have an account?",
+                                style: TextStyle(fontSize: 18),
+                              ),
 
-                                TextButton(
-                                  onPressed: () {
-                                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>
-                                     Signin()));
-
-                                  },
-                                  child: const Text(
-                                    "Sign In",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xff0D47A1),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Signin(),
                                     ),
+                                  );
+                                },
+                                child: const Text(
+                                  "Sign In",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff0D47A1),
                                   ),
                                 ),
-                              ],
-                            ),
-                                                      
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                      
                     ),
                   ],
                 ),
