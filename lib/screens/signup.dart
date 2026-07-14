@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:task_flow/firbaseservices/service.dart';
+import 'package:task_flow/screens/navbar.dart';
 import 'package:task_flow/screens/signIn.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -105,6 +106,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               FocusManager.instance.primaryFocus!.unfocus();
             },
             child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -256,12 +258,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 if (_formkey.currentState!.validate()) {
                                   try {
                                     UserCredential userCredential =
-                                        await Service.signUp(
+                                        await Service.instance.signUp(
                                           emailController.text,
                                           passwordController.text,
                                         );
-                                    User u = userCredential.user!;
-                                    print(u.uid);
+                                    User u = userCredential.user!;                                    
                                     u.updateDisplayName(nameController.text);
                                     if (!context.mounted) {
                                       return;
@@ -273,7 +274,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           "Account Created Successfully",
                                         ),
                                       ),
+                                      
                                     );
+                                    Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=>
+                                    Navbar()));
+                                   
                                   } on FirebaseAuthException catch (e) {
                                     String message = "";
                                     switch (e.code) {
@@ -289,16 +294,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       case "weak-password":
                                         message =
                                             "Password should be at least 6 characters.";
-                                        break;
-
-                                      case "user-not-found":
-                                        message =
-                                            "No account found with this email.";
-                                        break;
-
-                                      case "wrong-password":
-                                        message = "Incorrect password.";
-                                        break;
+                                        break;                                                                         
 
                                       case "network-request-failed":
                                         message =
@@ -306,8 +302,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         break;
 
                                       default:
-                                        message =
-                                            e.message ??
+                                        message =                                        
                                             "Something went wrong.";
                                     }
                                     ScaffoldMessenger.of(context).showSnackBar

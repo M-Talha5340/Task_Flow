@@ -1,10 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:task_flow/models/task.dart';
 import 'package:task_flow/models/taskdata.dart';
 import 'package:task_flow/screens/addtask.dart';
 
-class Home extends StatefulWidget {
+class Home extends StatefulWidget {  
   const Home({super.key});
 
   @override
@@ -14,6 +15,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
    int totalPending = 0;
   int currentindex = 0;
+  late final User user;
   
    
   List<Task> get filteredTasks {
@@ -35,6 +37,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     totalPending = tasks.where((t) => t.completed == false).length;
+     user = FirebaseAuth.instance.currentUser!;
   
   }
 
@@ -55,8 +58,8 @@ class _HomeState extends State<Home> {
             //================ GREETING ===================
             Padding(
               padding: const EdgeInsets.only(left: 10),
-              child: const Text(
-                "Good Morning, Alex",
+              child:  Text(
+                "Good Morning, ${user.displayName}",
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -79,6 +82,7 @@ class _HomeState extends State<Home> {
 
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(),
               child: Row(
                 children: [
                   ChoiceChip(
@@ -135,6 +139,7 @@ class _HomeState extends State<Home> {
             Expanded(
               child: ListView.builder(
                 itemCount: filteredTasks.length,
+                physics: BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),

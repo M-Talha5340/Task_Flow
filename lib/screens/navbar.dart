@@ -1,10 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:task_flow/screens/calender.dart';
 import 'package:task_flow/screens/home.dart';
 import 'package:task_flow/screens/profile.dart';
 import 'package:task_flow/widgets/custombottomnav.dart';
 
-class Navbar extends StatefulWidget {
+class Navbar extends StatefulWidget {  
   const Navbar({super.key});
 
   @override
@@ -15,8 +16,14 @@ class _NavbarScreenState extends State<Navbar> {
  
   int selectedIndex = 0;
 
-   List<Widget> screens = [Home(),CalendarScreen(),Profile()];
-
+   late List<Widget> screens ;
+    
+    @override
+   void initState(){
+        super.initState();
+        screens =[Home(),CalendarScreen(),Profile()];
+   }
+   
   @override
   Widget build(BuildContext context) {
     return Scaffold(             

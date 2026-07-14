@@ -181,7 +181,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     )
 
                   : ListView.builder(
-
+                      physics:  BouncingScrollPhysics(),
                       itemCount: todayEvents.length,
 
                       itemBuilder: (context, index) {

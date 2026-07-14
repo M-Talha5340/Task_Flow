@@ -1,6 +1,8 @@
 // ignore_for_file: file_names
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:task_flow/firbaseservices/service.dart';
 import 'package:task_flow/screens/forgotpassword.dart';
 import 'package:task_flow/screens/navbar.dart';
 import 'package:task_flow/screens/signup.dart';
@@ -100,6 +102,7 @@ class _SigninState extends State<Signin> {
            child: 
           Center(
             child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
               padding: const EdgeInsets.all(20),
               child: Container(
                 width: double.infinity,
@@ -235,24 +238,6 @@ class _SigninState extends State<Signin> {
                       ),
                     ),
         
-                    const SizedBox(height: 18),
-        
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: rememberMe,
-                          onChanged: (value) {
-                            setState(() {
-                              rememberMe = value!;
-                            });
-                          },
-                        ),
-                        const Text(
-                          "Keep me signed in",
-                          style: TextStyle(fontSize: 17),
-                        )
-                      ],
-                    ),
         
                     const SizedBox(height: 15),
         
@@ -266,14 +251,45 @@ class _SigninState extends State<Signin> {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        onPressed: () {
-                            if(_formkey.currentState!.validate()){
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_){
-                                    return Navbar();
-                                  }));
-                            }
+                        onPressed: () async {
+                                if (_formkey.currentState!.validate()) {
+                                  try {
+                                    
+                                        await Service.instance.signIn(
+                                          emailController.text,
+                                          passwordController.text,
+                                        );
+                                   if (!context.mounted) {
+                                      return;
+                                    }
+                                    
+                                  
+                                   
+                                  } on FirebaseAuthException catch (e) {
+                                    String message = "";
+                                    switch (e.code) {
+                                       case "invalid-credential":
+                                        message = "Please enter valid cridential.";
+                                        break;
 
-                        },
+                                      case "wrong-password":
+                                        message =
+                                            "Incorrect Password.";
+                                        break;                                                                         
+
+                                      case "network-request-failed":
+                                        message =
+                                            "Please check your internet connection.";
+                                        break;
+
+                                      default:
+                                        message =                                        
+                                            "Something went wrong.";
+                                    }
+                                    ScaffoldMessenger.of(context).showSnackBar
+                                    (SnackBar(content: Text(message)));
+                                  }
+                                }},
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

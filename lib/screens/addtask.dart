@@ -88,6 +88,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             FocusManager.instance.primaryFocus!.unfocus();
           },
           child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
             padding: const EdgeInsets.all(20),
 
             child: Column(

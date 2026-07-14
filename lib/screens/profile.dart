@@ -1,18 +1,30 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
   @override
   State<Profile> createState() => _ProfileState();
+
+  void initState(){}
 }
 
 class _ProfileState extends State<Profile> {
   File ?image;
   final _imagepicker = ImagePicker();
+  final User user = FirebaseAuth.instance.currentUser!;
+
+  //  @override
+  // void initState(){
+  //       super.initState();
+  //       _auth = FirebaseAuth.instance;
+
+  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,19 +95,21 @@ class _ProfileState extends State<Profile> {
 
           const SizedBox(height: 25),
 
-          const Text(
-            "Alex Morgan",
+           Text(
+            "${user.displayName}",
             style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.bold,
               color: Color(0xff102A5C),
+              
             ),
-          ),
+            textAlign: TextAlign.center,
+                     ),
 
           const SizedBox(height: 8),
 
-          const Text(
-            "alex.m@taskflow.com",
+           Text(
+            "${user.email}",
             style: TextStyle(
               fontSize: 20,
               color: Colors.black54,
@@ -126,7 +140,11 @@ class _ProfileState extends State<Profile> {
 
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () async{
+                    await FirebaseAuth.instance.signOut();
+                    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>
+                    // Signin()));
+                  },
                   icon: const Icon(Icons.logout),
                   label: const Text("Logout"),
                   style: OutlinedButton.styleFrom(
