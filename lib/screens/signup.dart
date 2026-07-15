@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:task_flow/firbaseservices/firestore_services.dart';
 import 'package:task_flow/firbaseservices/service.dart';
 import 'package:task_flow/screens/navbar.dart';
 import 'package:task_flow/screens/signIn.dart';
@@ -262,8 +263,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           emailController.text,
                                           passwordController.text,
                                         );
-                                    User u = userCredential.user!;                                    
-                                    u.updateDisplayName(nameController.text);
+                                    User u = userCredential.user!;   
+                                   u.updateDisplayName(nameController.text);                                             
+                                    await FirestoreServices.instance.createUser(uid: u.uid, 
+                                    name: nameController.text, email: emailController.text);
                                     if (!context.mounted) {
                                       return;
                                     }

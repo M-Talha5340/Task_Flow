@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
+import 'package:task_flow/firbaseservices/firestore_services.dart';
 import 'package:task_flow/models/task.dart';
-import 'package:task_flow/models/taskdata.dart';
 import 'package:task_flow/screens/navbar.dart';
 
 class NewTaskScreen extends StatefulWidget {
@@ -39,6 +40,11 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     if ( name == "mm/dd/yyyy") {
       return "Select Date";
     }
+    if(selectedDate!.day < DateTime.now().day || selectedDate!.month < DateTime.now().month
+    || selectedDate!.year < DateTime.now().year){
+      return "Invalid Date Selected";
+    }
+    
     return null;
   }
 
@@ -127,7 +133,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
 
   Widget buildSaveButton() {
     return GestureDetector(
-      onTap: () {
+      onTap: () async{
         if (_formkey.currentState!.validate()) {
           var t1 = Task(
             title: titleController.text,
@@ -136,7 +142,10 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             priority: selectedPriority,
             completed: false,
           );
-          tasks.add(t1);
+            FirestoreServices.instance.addTask(t1);              
+               if(!mounted){
+                return ;
+               }
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_){
             return Navbar();
           }));
