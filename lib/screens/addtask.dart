@@ -1,8 +1,7 @@
-
 import 'package:flutter/material.dart';
-import 'package:task_flow/firbaseservices/firestore_services.dart';
+import 'package:provider/provider.dart';
 import 'package:task_flow/models/task.dart';
-import 'package:task_flow/screens/navbar.dart';
+import 'package:task_flow/providers/taskprovider.dart';
 
 class NewTaskScreen extends StatefulWidget {
   const NewTaskScreen({super.key});
@@ -14,7 +13,9 @@ class NewTaskScreen extends StatefulWidget {
 class _NewTaskScreenState extends State<NewTaskScreen> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController dateController = TextEditingController(text: "mm/dd/yyyy");
+  final TextEditingController dateController = TextEditingController(
+    text: "mm/dd/yyyy",
+  );
   final _formkey = GlobalKey<FormState>();
   DateTime? selectedDate;
 
@@ -37,14 +38,15 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   }
 
   String? isValidDate(String? name) {
-    if ( name == "mm/dd/yyyy") {
+    if (name == "mm/dd/yyyy") {
       return "Select Date";
     }
-    if(selectedDate!.day < DateTime.now().day || selectedDate!.month < DateTime.now().month
-    || selectedDate!.year < DateTime.now().year){
+    if (selectedDate!.day < DateTime.now().day ||
+        selectedDate!.month < DateTime.now().month ||
+        selectedDate!.year < DateTime.now().year) {
       return "Invalid Date Selected";
     }
-    
+
     return null;
   }
 
@@ -58,9 +60,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_){
-              return Navbar();
-            }));
+            Navigator.pop(context);
           },
           icon: const Icon(
             Icons.arrow_back,
@@ -133,7 +133,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
 
   Widget buildSaveButton() {
     return GestureDetector(
-      onTap: () async{
+      onTap: () async {
         if (_formkey.currentState!.validate()) {
           var t1 = Task(
             title: titleController.text,
@@ -142,13 +142,17 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             priority: selectedPriority,
             completed: false,
           );
-            FirestoreServices.instance.addTask(t1);              
-               if(!mounted){
-                return ;
-               }
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_){
-            return Navbar();
-          }));
+          try {
+            await context.read<Taskprovider>().addTask(t1);
+            if (!mounted) {
+              return;
+            }
+            Navigator.pop(context);
+          } catch (e) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(e.toString())));
+          }
         }
       },
       child: Container(
@@ -159,21 +163,29 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
           borderRadius: BorderRadius.circular(15),
           color: Color(0xff0D47A1),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.save, color: Colors.white),
-            const SizedBox(width: 10),
-            Text(
-              "Save Task",
-              style: TextStyle(
+        child: context.watch<Taskprovider>().isSaving
+            ? Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
                 color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
               ),
-            ),
-          ],
-        ),
+            )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.save, color: Colors.white),
+                  const SizedBox(width: 10),
+
+                  Text(
+                    "Save Task",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -395,34 +407,34 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             if (pickedDate != null) {
               setState(() {
                 selectedDate = pickedDate;
-               dateController.text = selectedDate == null
-        ? "mm/dd/yyyy"
-        : "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
+                dateController.text = selectedDate == null
+                    ? "mm/dd/yyyy"
+                    : "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
               });
             }
           },
           validator: isValidDate,
-          controller: dateController ,
+          controller: dateController,
           style: TextStyle(
             fontSize: 18,
-        
+
             color: selectedDate == null ? Colors.grey : Colors.black87,
           ),
           readOnly: true,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-        
+
               borderSide: const BorderSide(color: Color(0xffC9D0E3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-        
+
               borderSide: const BorderSide(color: Color(0xffC9D0E3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-        
+
               borderSide: const BorderSide(color: Color(0xffC9D0E3)),
             ),
             suffixIcon: const Icon(Icons.calendar_month, size: 30),

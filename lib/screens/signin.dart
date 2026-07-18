@@ -262,6 +262,7 @@ class _SigninState extends State<Signin> {
                                       return;
                                     }
                                     
+                                    
                                   
                                    
                                   } on FirebaseAuthException catch (e) {
@@ -287,6 +288,8 @@ class _SigninState extends State<Signin> {
                                     }
                                     ScaffoldMessenger.of(context).showSnackBar
                                     (SnackBar(content: Text(message)));
+                                  }finally{
+
                                   }
                                 }},
                         child: const Row(

@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Task {
    String? id;
-   String title;
-   String description;
-   DateTime date;
-   String priority;
-   bool completed;
+   final String title;
+   final String description;
+   final DateTime date;
+   final String priority;
+   final bool completed;
 
   Task({
     required this.title,
@@ -16,6 +16,18 @@ class Task {
     required this.completed,
     this.id
   });
+
+   Task copyWith({
+    String ?title,
+    String ?description,
+    DateTime ?date,
+    String ?priority,
+    bool ?completed,
+    String ?id
+  }){
+    return Task( id: id??this.id,  title: title ?? this.title, description: description ??this.description,
+     date: date??this.date, priority: priority??this.priority, completed: completed??this.completed);
+  }
 
      Map<String,dynamic> tomap(){
             return {

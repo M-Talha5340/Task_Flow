@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart'as storage;
 import 'package:task_flow/models/task.dart';
+import 'package:task_flow/models/user.dart';
 
 class FirestoreServices {
 
@@ -16,36 +20,75 @@ class FirestoreServices {
   })async{
              await _firestore.collection("users").doc(
                   uid).set(
-                    {"name": name,"email":email,"profile-image":""}
+                    {"name": name,"email":email,"profileimg":null}
                   );
     
   }
 
-  Future<void> addTask(Task t )async{
-            String id =  FirebaseAuth.instance.currentUser!.uid;
-               final docRef= FirebaseFirestore.instance.collection("users").doc(id)
-               .collection("tasks").doc();
-                t.id = docRef.id;                
-              await docRef.set(t.tomap());
+   Future<String> uploadProfileImage(File file) async {
+  String uid = FirebaseAuth.instance.currentUser!.uid;
+
+  final ref = storage.FirebaseStorage.instance
+      .ref()
+      .child("profileimages")
+      .child("$uid.jpg");
+
+  await ref.putFile(file);
+
+  return await ref.getDownloadURL();
+}
+
+   Future<void> updateUser(AppUser user)async{
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+             await _firestore.collection("users").doc(
+                  uid).update(user.tomap());
+    
+  }
+   Future<void> deleteUser()async{
+     String uid = FirebaseAuth.instance.currentUser!.uid;
+             await _firestore.collection("users").doc(
+                  uid).delete();
+    
   }
 
-  Stream<List<Task>> viewTask(){         
-         String id =  FirebaseAuth.instance.currentUser!.uid;
-        return FirebaseFirestore.instance.collection("users").doc(id).collection("tasks").
-        snapshots().map((snapshot){          
-            return snapshot.docs.map((doc){
-              return Task.frommap(doc.data());
-            }).toList();
-        });           
-         
-  } 
+   Future<AppUser?> getUser()async{
+            if(FirebaseAuth.instance.currentUser != null){
+          String uid = FirebaseAuth.instance.currentUser!.uid;
+          final querySnapshot=   await FirebaseFirestore.instance.collection("users").doc(uid).get();             
+            return AppUser.fromMap(querySnapshot.data()!);
+            }
+            return null ;
+                   
+  }
 
-    Future<void> updateTask(String id,bool value) async{
+  Future<void> addTask(Task task)async{ 
+              String id =  FirebaseAuth.instance.currentUser!.uid;
+               final docRef= FirebaseFirestore.instance.collection("users").doc(id)
+               .collection("tasks").doc();  
+               task.id = docRef.id;                         
+              await docRef.set(task.tomap());
+  }
+
+
+  Future<List<Task>> getTask()async{
+    String id =  FirebaseAuth.instance.currentUser!.uid;
+     QuerySnapshot querySnapshot=   await FirebaseFirestore.instance.collection("users").
+     doc(id).collection("tasks").get();
+      
+    return querySnapshot.docs.map((doc)=> Task.frommap(doc.data() as Map<String,dynamic>)).toList();
+  }
+
+    Future<void> updateTask(Task task) async{
               String uid = FirebaseAuth.instance.currentUser!.uid;
               await FirebaseFirestore.instance.collection("users").doc(uid).
-              collection("tasks").doc(id).update({
-                "completed": value
-              });
+              collection("tasks").doc(task.id).update(task.tomap());
 
        }
+       Future<void> deleteTask(Task task) async{
+              String uid = FirebaseAuth.instance.currentUser!.uid;
+              await FirebaseFirestore.instance.collection("users").doc(uid).
+              collection("tasks").doc(task.id).delete();
+
+       }
+       
 }

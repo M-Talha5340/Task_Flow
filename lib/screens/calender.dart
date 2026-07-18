@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:task_flow/firbaseservices/firestore_services.dart';
-import 'package:task_flow/models/task.dart';
+import 'package:task_flow/providers/taskprovider.dart';
 import 'package:task_flow/screens/addtask.dart';
 import 'package:task_flow/screens/navbar.dart';
 
@@ -17,18 +17,14 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
 
   DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = DateTime.now();
-  List<Task> task = [];
+  DateTime _selectedDay = DateTime.now();  
 
-  List<Task> getEvents(DateTime day) {
-    return task.where((t)=> t.date.day == day.day && 
-    t.date.month == day.month && t.date.year == day.year).toList();
-  }
+
 
   @override
   Widget build(BuildContext context) {
-
-    final todayEvents = getEvents(_selectedDay);
+     final provider = context.watch<Taskprovider>();
+    final todayEvents = provider.tasksForDay(_selectedDay);
 
     return Scaffold(
 
@@ -36,21 +32,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child:  StreamBuilder<List<Task>>(
-                    stream: FirestoreServices.instance.viewTask(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError){
-                        return Center(
-                          child: Text("Something went Wrong"),
-                        );
-                      }
-                      if(snapshot.connectionState == ConnectionState.waiting){
-                         return Center(
-                            child: CircularProgressIndicator(),
-                         );
-                      }
-                      task = snapshot.data ?? [];          
-            return Column(
+        child:  Column(
             
               children: [
             
@@ -94,7 +76,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             
                     eventLoader: (day) {
             
-                      return getEvents(day);
+                      return provider.tasksForDay(day);
             
                     },
             
@@ -276,9 +258,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             
               ],
             
-            );
-          }
-        ),
+            ),
       ),
     );
   }

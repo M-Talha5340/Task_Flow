@@ -1,12 +1,11 @@
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:intl/intl.dart';
-import 'package:task_flow/firbaseservices/firestore_services.dart';
+import 'package:provider/provider.dart';
 import 'package:task_flow/models/task.dart';
+import 'package:task_flow/providers/taskprovider.dart';
+import 'package:task_flow/providers/userprovider.dart';
 import 'package:task_flow/screens/addtask.dart';
+import 'package:task_flow/widgets/textile.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,41 +14,19 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
-  int currentindex = 0;
-  List<Task> task = [];
-  int get totalPending => task.where((t) => !t.completed).length;
-  late final User user;
-
-  List<Task> get filteredTasks {
-    switch (currentindex) {
-      case 0:
-        return task;
-      case 1:
-        return task.where((t) => t.completed == false).toList();
-      case 2:
-        return task.where((t) => t.completed == true).toList();
-      case 3:
-        return task.where((t) => t.priority == "HIGH").toList();
-      default:
-        return task;
-    }
-  }
+class _HomeState extends State<Home> {  
 
   @override
   void initState() {
-    super.initState();
-    user = FirebaseAuth.instance.currentUser!;
+    super.initState();    
   }
 
-  
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => NewTaskScreen()),
           );
@@ -58,50 +35,49 @@ class _HomeState extends State<Home> {
         backgroundColor: Color(0xff0D47A1),
         child: Icon(Icons.add, color: Colors.white),
       ),
-      body: StreamBuilder<List<Task>>(
-        stream: FirestoreServices.instance.viewTask(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text("Something went wrong"));
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          task = snapshot.data ?? [];
-
-          return Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //================ GREETING ===================
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Good Morning, ${user.displayName}",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff102A5C),
-                    ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //================ GREETING ===================
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Selector<Userprovider,String?>(
+                selector: (_, provider) => provider.user!.name,
+                builder: (context, name, child) {              
+                return Text(
+                  "Good Morning, $name",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff102A5C),
                   ),
-                ),
+                );
+                }
+              ),
+            ),
 
-                const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-                Padding(
+            Selector<Taskprovider,int>(
+              selector: (_, provider) => provider.tasks.where((t)=>!t.completed).length,
+              builder: (context, totalpending, child) {              
+                return Padding(
                   padding: const EdgeInsets.only(left: 10.0),
                   child: Text(
-                    "You have $totalPending tasks to complete today.",
-                    style: TextStyle(fontSize: 22, color: Colors.black54),
-                  ),
-                ),
+                    "You have $totalpending task to complete today.",
+                  style: TextStyle(fontSize: 22, color: Colors.black54), ),
+                );
+              },
+            ),
 
-                const SizedBox(height: 15),
+            const SizedBox(height: 15),
 
-                SingleChildScrollView(
+            Selector<Taskprovider,TaskFilter>(
+              selector: (context, provider) =>provider.filter ,
+              builder: (context, filter, child) {
+                return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: BouncingScrollPhysics(),
                   child: Row(
@@ -114,11 +90,11 @@ class _HomeState extends State<Home> {
                             color: Color(0xff102A5C),
                           ),
                         ),
-                        selected: currentindex == 0,
+                        selected: filter == TaskFilter.all,
                         onSelected: (_) {
-                          setState(() {
-                            currentindex = 0;
-                          });
+                          context.read<Taskprovider>().chandeFilter(
+                            TaskFilter.all,
+                          );
                         },
                       ),
 
@@ -132,11 +108,11 @@ class _HomeState extends State<Home> {
                             color: Color(0xff102A5C),
                           ),
                         ),
-                        selected: currentindex == 1,
+                        selected: filter == TaskFilter.pending,
                         onSelected: (_) {
-                          setState(() {
-                            currentindex = 1;
-                          });
+                          context.read<Taskprovider>().chandeFilter(
+                            TaskFilter.pending,
+                          );
                         },
                       ),
 
@@ -150,11 +126,11 @@ class _HomeState extends State<Home> {
                             color: Color(0xff102A5C),
                           ),
                         ),
-                        selected: currentindex == 2,
+                        selected: filter == TaskFilter.completed,
                         onSelected: (_) {
-                          setState(() {
-                            currentindex = 2;
-                          });
+                          context.read<Taskprovider>().chandeFilter(
+                            TaskFilter.completed,
+                          );
                         },
                       ),
                       SizedBox(width: 10),
@@ -166,153 +142,38 @@ class _HomeState extends State<Home> {
                             color: Color(0xff102A5C),
                           ),
                         ),
-                        selected: currentindex == 3,
+                        selected: filter == TaskFilter.highPriority,
                         onSelected: (_) {
-                          setState(() {
-                            currentindex = 3;
-                          });
+                          context.read<Taskprovider>().chandeFilter(
+                            TaskFilter.highPriority,
+                          );
                         },
                       ),
                     ],
                   ),
-                ),
-                // Placeholder for Part 3
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredTasks.length,
-                    physics: BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 1.5, color: Colors.white),
-                            borderRadius: BorderRadius.circular(15),
-                            color: Colors.white,
-                          ),
-                          child: Slidable(
-                            endActionPane: ActionPane(motion: 
-                            StretchMotion(), children: [
-                              SlidableAction( 
-                                 onPressed: (context)async{
-                                     String id = FirebaseAuth.instance.currentUser!.uid;
-                                     await FirebaseFirestore.instance.collection("users").doc(id).
-                                     collection("tasks").doc(filteredTasks[index].id).delete();
-                                 },
-                                icon: Icons.delete_forever,
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-
-                                ),
-                            ]),
-                            child: ListTile(
-                              leading: Checkbox(
-                                value: filteredTasks[index].completed,
-                                onChanged: (value) async {
-                                  await FirestoreServices.instance.updateTask(
-                                    filteredTasks[index].id!,
-                                    value!,
-                                  );
-                                },
-                              ),
-                              title: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      filteredTasks[index].title,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        overflow: TextOverflow.ellipsis,
-                                        color: Color(0xff102A5C),
-                                        decoration: filteredTasks[index].completed
-                                            ? TextDecoration.lineThrough
-                                            : TextDecoration.none,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 5),
-                                  Container(
-                                    padding: EdgeInsets.all(2),
-                            
-                                    decoration: BoxDecoration(
-                                      color:
-                                          filteredTasks[index].priority == "HIGH"
-                                          ? Colors.orange.shade300
-                                          : filteredTasks[index].priority == "MED"
-                                          ? const Color.fromARGB(
-                                              255,
-                                              82,
-                                              197,
-                                              250,
-                                            )
-                                          : Colors.grey,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Text(
-                                      filteredTasks[index].priority,
-                                      style: TextStyle(
-                                        decoration: filteredTasks[index].completed
-                                            ? TextDecoration.lineThrough
-                                            : TextDecoration.none,
-                                        color:
-                                            filteredTasks[index].priority ==
-                                                "HIGH"
-                                            ? Colors.brown
-                                            : filteredTasks[index].priority ==
-                                                  "MED"
-                                            ? Colors.green
-                                            : const Color.fromARGB(
-                                                255,
-                                                81,
-                                                80,
-                                                80,
-                                              ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    filteredTasks[index].description,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      decoration: filteredTasks[index].completed
-                                          ? TextDecoration.lineThrough
-                                          : TextDecoration.none,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    DateFormat(
-                                      "dd MMM yyyy",
-                                    ).format(filteredTasks[index].date),
-                                    style: TextStyle(
-                                      decoration: filteredTasks[index].completed
-                                          ? TextDecoration.lineThrough
-                                          : TextDecoration.none,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 5),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+            // Placeholder for Part 3
+            Selector<Taskprovider,List<Task>>( 
+
+              selector: (_, provider) => provider.filteredTasks ,               
+               builder: (context, tasks, child) {  
+              
+              return Expanded(
+                child: ListView.builder(                  
+                  itemCount: tasks.length,
+                  physics: BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return Textile(id: tasks[index].id!,);
+                    
+                  },
+                ),
+              );
+            }
+            ),
+          ],
+        ),
       ),
     );
   }
